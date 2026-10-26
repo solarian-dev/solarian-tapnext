@@ -1,0 +1,41 @@
+# TAPNext++: a point clicked on a camera frame, followed frame by frame.
+# solarian install copies this to conf/services/point_tracker.yaml; a
+# TapNextPointProcessor field, or any TapNextClient caller, reads these keys.
+#
+# Serve the model on a GPU host with:
+#   solarian run-service point_tracker
+
+# Where the field is computed: `robot` (the camera's module process) or
+# `server` (the relay).
+execution_place: ${deployment.point_tracker_execution_place}
+server_url: ${deployment.tapnext_url}
+# The endpoint's bearer token; null for a server that asks for none.
+token: ${oc.select:deployment.solarian_base_endpoint_token,null}
+
+# What `solarian run-service point_tracker` and Solarian Base serve. A bare
+# filename is in the project's models/tapnext/ ($SOLARIAN_MODELS_DIR when
+# set), and the published tapnextpp_512.ckpt (2.5 GB) is downloaded there on
+# first start. --resolution is the square the frame is resized to; keep the
+# checkpoint's 512 (~70 ms a step on an RTX 3090): at 256 it is ~3x faster but
+# reports about half of each frame's motion.
+server:
+  service: tapnext
+  port: 8767
+  checkpoint: tapnextpp_512.ckpt
+  args: [--resolution, 512]
+
+# What of the frame the tracker sees: `auto` crops to the fisheye's lit circle
+# on each click's frame, so the scene rather than the black corners fills the
+# model's square input. `none`, or [x0, y0, x1, y1] in capture pixels.
+crop: auto
+# Long edge of the crop as sent, in pixels; null sends it at full size.
+resize: 512
+jpeg_quality: 90
+# Side of the box drawn around the tracked point, in capture pixels.
+box_px: 24
+
+# Seconds. The first /init after a cold start may load the model.
+timeout: 5.0
+init_timeout: 60.0
+
+label: TAPNext

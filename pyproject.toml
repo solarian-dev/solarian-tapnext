@@ -1,0 +1,40 @@
+[project]
+name = "solarian-tapnext"
+version = "0.1.0"
+description = "Any-point tracking for Solarian, served by TAPNext++"
+authors = [
+    {name = "Solarian Contributors", email = "solarian@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+# The client side runs wherever a skill or processor follows points, so it
+# needs only what solarian core already ships.
+dependencies = [
+    "solarian>=0.1.0",
+    "numpy",
+    "opencv-python",
+]
+
+[project.optional-dependencies]
+# The GPU host running `solarian run-service tapnext`. The model code is the
+# copy vendored in solarian_tapnext.tapnext.
+server = [
+    "torch",
+    "torchvision",
+    "einops",
+    "fastapi",
+    "uvicorn",
+]
+
+[project.entry-points."solarian.services"]
+tapnext = "solarian_tapnext.service:TapNextService"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["solarian_tapnext*"]
+
+[tool.setuptools.package-data]
+solarian_tapnext = ["templates/services/*.yaml", "tapnext/LICENSE"]
